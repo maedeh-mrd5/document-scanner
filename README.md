@@ -127,16 +127,3 @@ Shadow Removal
       ↓
 Final Scanned Document
 ```
-
-## Applications
-
-- Mobile document scanning
-- OCR preprocessing
-- Receipt digitization
-- Book page extraction
-- Automatic document cropping
-- Digital archiving
-
-## Author
-
-Developed as a Computer Vision project using Python and OpenCV.
