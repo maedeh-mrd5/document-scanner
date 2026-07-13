@@ -1,4 +1,4 @@
-# 📄 Document Detection from Images and Videos
+# Document Detection from Images and Videos
 
 
 
