@@ -1,129 +1,219 @@
-# Automatic Document Detection and Perspective Correction
+# 📄 Document Detection from Images and Videos
 
-This project implements an automatic document detection and scanning pipeline using **Python** and **OpenCV**. The algorithm detects a document from an input image, corrects its perspective, removes shadows, and produces a clean, scanner-like output.
+
+
+This project implements a robust **document detection algorithm** for both **images** and **videos** using OpenCV. The algorithm is designed to work under different background and lighting conditions by adapting its detection strategy according to the visual characteristics of the document.
+
+
 
 ## Features
 
-- Automatic document detection
-- Adaptive processing pipeline based on image contrast
-- Perspective transformation
-- Shadow removal
-- Noise reduction
-- Contrast enhancement using CLAHE
-- Edge detection using Canny and Sobel operators
-- Morphological operations for robust page extraction
-- Visualization of every processing stage
 
-## Processing Pipeline
 
-The algorithm first analyzes the image to determine whether the foreground and background have sufficient contrast.
+* Document detection in both images and videos
 
-### High-Contrast Images
+* Adaptive algorithm based on document/background similarity
 
-For images with good contrast, the following steps are applied:
+* Robust contour detection
 
-1. Canny edge detection
-2. Contour extraction
-3. Convex hull approximation
-4. Quadrilateral detection
-5. Perspective transformation
-6. Shadow removal
-7. Adaptive thresholding
+* Morphological gap filling for incomplete document edges
 
-### Low-Contrast Images
+* Automatic best frame selection from videos
 
-For challenging images with low contrast, the pipeline uses additional enhancement steps:
+* Perspective correction using the detected document corners
 
-1. Convert image to LAB color space
-2. Extract luminance channel
-3. Gaussian blur
-4. CLAHE contrast enhancement
-5. Bilateral filtering
-6. Sobel edge detection
-7. Otsu thresholding
-8. Morphological closing
-9. Contour detection
-10. Perspective correction
-11. Shadow removal
+
+
+---
+
+
+
+## Algorithm
+
+
+
+The proposed algorithm uses two different strategies depending on the similarity between the document color and the surrounding background.
+
+
+
+### Case 1: Document and Background Have Similar Colors
+
+
+
+When the document color is close to the background color, edge-based methods become unreliable. Therefore, two complementary approaches are used:
+
+
+
+### Method 1: Content-Based Detection
+
+
+
+The document is localized according to its internal textual and structural content rather than relying only on color differences.
+
+
+
+### Method 2: Bounding Region Estimation
+
+
+
+If content detection is insufficient:
+
+
+
+* Very small contours are removed as noise.
+
+* The leftmost and topmost points are found.
+
+* The rightmost and bottommost points are found.
+
+* These extreme points are used to estimate the document boundary.
+
+
+
+---
+
+
+
+### Case 2: Document and Background Have Different Colors
+
+
+
+When sufficient contrast exists between the document and the background, the following pipeline is applied:
+
+
+
+1. Remove document text to simplify the page structure.
+
+2. Apply Canny edge detection.
+
+3. Detect the document contour and extract its four corners.
+
+4. If a complete contour cannot be detected (usually because of broken page edges), perform large-scale morphological closing to fill the gaps.
+
+5. Detect the document contour again.
+
+6. Apply perspective transformation to obtain the final scanned document.
+
+
+
+---
+
+
+
+## Video Processing
+
+
+
+For videos, the above detection algorithm is applied independently to every frame.
+
+
+
+A custom **frame scoring function** evaluates each detected document based on detection quality (such as contour completeness and geometric consistency).
+
+
+
+The frame with the highest score is selected as the final output.
+
+
+
+---
+
+
 
 ## Project Structure
 
+
+
 ```
-project/
-│
+
+├── image_scanner.ipynb      # Document detection for images
+
+├── video_scanner.ipynb      # Document detection for videos
+
 ├── images/
-│   ├── input_1.jpg
-│   ├── input_2.jpg
-│   └── ...
-│
-├── document_detection.py
+
+├── videos/
+
 └── README.md
-```
-
-## Requirements
-
-Install the required libraries:
-
-```bash
-pip install numpy matplotlib opencv-python
-```
-
-## Usage
-
-Place your input images inside the `images/` directory.
-
-Run the script:
-
-```bash
-python document_detection.py
-```
-
-The program processes each image and displays:
-
-- Original Image
-- Edge Detection
-- Detected Document
-- Perspective Corrected Image
-- Final Scanned Result
-
-## Main Techniques Used
-
-- OpenCV
-- NumPy
-- Gaussian Blur
-- Bilateral Filtering
-- CLAHE
-- Sobel Operator
-- Canny Edge Detection
-- Otsu Thresholding
-- Morphological Operations
-- Convex Hull Detection
-- Perspective Transform
-- Adaptive Thresholding
-
-## Output
-
-The algorithm produces a scanner-like image by:
-
-- Detecting the document boundary
-- Correcting perspective distortion
-- Removing uneven illumination and shadows
-- Enhancing text readability
-
-## Example Workflow
 
 ```
-Input Image
-      ↓
-Contrast Analysis
-      ↓
-Adaptive Detection Pipeline
-      ↓
-Page Detection
-      ↓
-Perspective Correction
-      ↓
-Shadow Removal
-      ↓
+
+
+
+---
+
+
+
+## Technologies
+
+
+
+* Python
+
+* OpenCV
+
+* NumPy
+
+* Matplotlib
+
+
+
+---
+
+
+
+## Processing Pipeline
+
+
+
+```
+
+Input Image / Video
+
+        │
+
+        ▼
+
+Check Background Similarity
+
+        │
+
+ ┌──────┴─────────┐
+
+ │                │
+
+ ▼                ▼
+
+Similar Colors    Different Colors
+
+ │                │
+
+Content-Based     Remove Text
+
+Detection         ↓
+
+ │             Canny Edge Detection
+
+Bounding Box       ↓
+
+Estimation      Contour Detection
+
+ │                │
+
+ └──────┬─────────┘
+
+        ▼
+
+Morphological Closing (if needed)
+
+        ▼
+
+Corner Detection
+
+        ▼
+
+Perspective Transformation
+
+        ▼
+
 Final Scanned Document
-```
